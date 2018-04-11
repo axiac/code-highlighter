@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
-  gem.add_development_dependency 'rouge', '~> 1.3'
+  gem.add_development_dependency 'rouge'#, '~> 1.3'
 
   gem.files         = `git ls-files`.split($/).reject {|f| f =~ /^demo\// }
   gem.require_paths = ["lib"]

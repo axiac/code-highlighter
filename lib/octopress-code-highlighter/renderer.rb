@@ -75,7 +75,7 @@ module Octopress
         end
 
         # Force wrapping after tags
-        code.gsub(/\n<\/span>/, "</span>\n")
+        code.gsub(/(\n[\s\n]*)<\/span>/, '</span>\1')
       end
 
       def render_plain

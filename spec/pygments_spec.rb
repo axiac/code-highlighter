@@ -37,6 +37,19 @@ EOF
 EOF
   end
 
+  let(:expected_output_lang_shell) do
+    stuff = <<-EOF
+{% raw %}<figure class='code-highlight-figure awesome'><div class='code-highlight'><pre class='code-highlight-pre'><div data-line='1' class='code-highlight-row numbered'><div class='code-highlight-line'><span class="c">#!/bin/bash</span>
+</div></div><div data-line='2' class='code-highlight-row numbered'><div class='code-highlight-line'> </div></div><div data-line='3' class='code-highlight-row numbered'><div class='code-highlight-line'><span class="nv">PROJECT</span><span class="o">=</span><span class="nv">$1</span>
+</div></div><div data-line='4' class='code-highlight-row numbered'><div class='code-highlight-line'><span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$PROJECT</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</div></div><div data-line='5' class='code-highlight-row numbered'><div class='code-highlight-line'>    <span class="nb">echo</span> <span class="s2">"Missing project name."</span>
+</div></div><div data-line='6' class='code-highlight-row numbered'><div class='code-highlight-line'>    <span class="nb">exit </span>1
+</div></div><div data-line='7' class='code-highlight-row numbered'><div class='code-highlight-line'><span class="k">fi</span>
+</div></div><div data-line='8' class='code-highlight-row numbered'><div class='code-highlight-line'> </div></div><div data-line='9' class='code-highlight-row numbered'><div class='code-highlight-line'><span class="nv">BASH_ENV</span><span class="o">=</span>~/.bashrc bash ~/bin/sismo <span class="nt">--quiet</span> build <span class="nv">$PROJECT</span> <span class="k">$(</span>git log <span class="nt">-1</span> HEAD <span class="nt">--pretty</span><span class="o">=</span><span class="s2">"%H"</span><span class="k">)</span> <span class="o">&gt;</span>/dev/null 2&gt;&amp;1 &amp;
+</div></div></pre></div></figure>{% endraw %}
+    EOF
+  end
+
   let(:code) do
     <<-EOF
 require "hi-there-honey"
@@ -47,6 +60,20 @@ end
 
 hi-there-honey
 # =>  "Hi, your name"
+    EOF
+  end
+
+  let(:shell) do
+    <<-EOF
+#!/bin/bash
+
+PROJECT=$1
+if [ -z "$PROJECT" ]; then
+    echo "Missing project name."
+    exit 1
+fi
+
+BASH_ENV=~/.bashrc bash ~/bin/sismo --quiet build $PROJECT $(git log -1 HEAD --pretty="%H") >/dev/null 2>&1 &
     EOF
   end
 
@@ -105,6 +132,14 @@ hi-there-honey
     context "with a language" do
       it "returns the right HTML for a given set of code" do
         expect(described_class.highlight(code, { lang: 'abc', aliases: {'abc'=>'ruby'}, escape: true, class: 'awesome' })).to eql(expected_output_lang_ruby.chop)
+      end
+    end
+
+    context "shell script" do
+      it "returns the right HTML for multi-line shell scripts" do
+        actual   = described_class.highlight(shell, {lang: 'sh', escape: true, class: 'awesome'})
+        expected = expected_output_lang_shell.chop
+        expect(actual).to eql(expected)
       end
     end
   end
