@@ -104,6 +104,7 @@ module Octopress
       def render_rouge
         if lexer = Rouge::Lexer.find(lang) || Rouge::Lexer.find(@aliases[lang])
           formatter = ::Rouge::Formatters::HTML.new(wrap: false)
+          formatter = ::Rouge::Formatters::HTMLLinewise.new(formatter)
           formatter.format(lexer.lex(@code))
         else
           render_plain
@@ -127,7 +128,7 @@ module Octopress
 
         table = "<div class='code-highlight'>"
         table += "<pre class='code-highlight-pre'>"
-        code.lines.each_with_index do |line,index|
+        code.split(/(?<=<\/div>)/).each_with_index do |line,index|
           classes = 'code-highlight-row'
           classes += lines ? ' numbered' : ' unnumbered'
           if marks.include? index + start
@@ -136,7 +137,7 @@ module Octopress
             classes += ' end-marked-line' unless marks.include? index + 1 + start
           end
           line = line.strip.empty? ? ' ' : line
-          table += "<div data-line='#{index + start}' class='#{classes}'><div class='code-highlight-line'>#{line}</div></div>"
+          table += "<div data-line='#{index + start}' class='#{classes}'><div class='code-highlight-line'>#{line}</div></div>\n"
         end
         table +="</pre></div>"
       end

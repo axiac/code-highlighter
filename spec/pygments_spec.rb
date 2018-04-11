@@ -50,6 +50,58 @@ hi-there-honey
     EOF
   end
 
+  let(:c_code) do
+    <<-EOF
+/* Limits for the TIME data type */
+#define TIME_MAX_HOUR 838
+#define TIME_MAX_MINUTE 59
+#define TIME_MAX_SECOND 59
+#define TIME_MAX_VALUE (TIME_MAX_HOUR*10000 + TIME_MAX_MINUTE*100 + TIME_MAX_SECOND)
+    EOF
+  end
+
+  let(:expected_output_lang_c) do
+    stuff = <<-EOF
+{% raw %}<figure class='code-highlight-figure awesome'><div class='code-highlight'><pre class='code-highlight-pre'><div data-line='1' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-1"><span class="cm">/* Limits for the TIME data type */</span></div>
+</div></div><div data-line='2' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-2"><span class="cp">#define TIME_MAX_HOUR 838</span></div>
+</div></div><div data-line='3' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-3"><span class="cp">#define TIME_MAX_MINUTE 59</span></div>
+</div></div><div data-line='4' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-4"><span class="cp">#define TIME_MAX_SECOND 59</span></div>
+</div></div><div data-line='5' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-5"><span class="cp">#define TIME_MAX_VALUE (TIME_MAX_HOUR*10000 + TIME_MAX_MINUTE*100 + TIME_MAX_SECOND)</span></div>
+</div></div></pre></div></figure>{% endraw %}
+    EOF
+    stuff.strip
+  end
+
+  let(:sh_script) do
+    <<-EOF
+#!/bin/bash
+
+PROJECT=$1
+if [ -z "$PROJECT" ]; then
+    echo "Missing project name."
+    exit 1
+fi
+
+BASH_ENV=~/.bashrc bash ~/bin/sismo --quiet build $PROJECT $(git log -1 HEAD --pretty="%H") >/dev/null 2>&1 &
+    EOF
+  end
+
+  let(:expected_output_lang_sh) do
+    stuff = <<-EOF
+{% raw %}<figure class='code-highlight-figure awesome'><div class='code-highlight'><pre class='code-highlight-pre'><div data-line='1' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-1"><span class="c">#!/bin/bash</span></div>
+</div></div><div data-line='2' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-2"></div>
+</div></div><div data-line='3' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-3"><span class="nv">PROJECT</span><span class="o">=</span><span class="nv">$1</span></div>
+</div></div><div data-line='4' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-4"><span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$PROJECT</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span></div>
+</div></div><div data-line='5' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-5"><span class="k">    </span><span class="nb">echo</span> <span class="s2">"Missing project name."</span></div>
+</div></div><div data-line='6' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-6">    <span class="nb">exit </span>1</div>
+</div></div><div data-line='7' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-7"><span class="k">fi</span></div>
+</div></div><div data-line='8' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-8"></div>
+</div></div><div data-line='9' class='code-highlight-row numbered'><div class='code-highlight-line'><div class="line-9"><span class="nv">BASH_ENV</span><span class="o">=</span>~/.bashrc bash ~/bin/sismo <span class="nt">--quiet</span> build <span class="nv">$PROJECT</span> <span class="k">$(</span>git log <span class="nt">-1</span> HEAD <span class="nt">--pretty</span><span class="o">=</span><span class="s2">"%H"</span><span class="k">)</span> <span class="o">&gt;</span>/dev/null 2&gt;&amp;1 &amp;</div>
+</div></div></pre></div></figure>{% endraw %}
+    EOF
+    stuff.strip
+  end
+
   let(:markup) do
     [
       "lang:abc",
@@ -105,6 +157,18 @@ hi-there-honey
     context "with a language" do
       it "returns the right HTML for a given set of code" do
         expect(described_class.highlight(code, { lang: 'abc', aliases: {'abc'=>'ruby'}, escape: true, class: 'awesome' })).to eql(expected_output_lang_ruby.chop)
+      end
+
+      it "returns the correct HTML for C" do
+        expected = expected_output_lang_c
+        actual   = described_class.highlight(c_code, { lang: 'c', escape: true, class: 'awesome'})
+        expect(actual).to eql(expected)
+      end
+
+      it "returns the correct HTML for shell" do
+        expected = expected_output_lang_sh
+        actual   = described_class.highlight(sh_script, { lang: 'sh', escape: true, class: 'awesome'})
+        expect(actual).to eql(expected)
       end
     end
   end
